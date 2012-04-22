@@ -1,0 +1,3 @@
+[submodule "paisleycmd/extern/paisley.git"]
+	path = paisleycmd/extern/paisley.git
+	url = git@github.com:thomasvs/paisley.git
