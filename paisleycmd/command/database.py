@@ -25,6 +25,8 @@ class Create(tcommand.TwistedCommand):
             defer.returnValue(3)
             return
 
+        yield self.parentCommand.parentCommand.db.createDB(args[0])
+
 
 class List(tcommand.TwistedCommand):
 
