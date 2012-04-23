@@ -28,10 +28,9 @@ couchdb_option_list = [
             action="store", dest="port", type="int",
             help="CouchDB port (defaults to %default)",
             default=_DEFAULT_PORT),
-#        optparse.Option('-D', '--database',
-#            action="store", dest="database",
-#            help="CouchDB database name (defaults to %s)" % _DEFAULT_DB,
-#            default=_DEFAULT_DB),
+        optparse.Option('-D', '--database',
+            action="store", dest="database",
+            help="CouchDB database name")
 ]
 
 
@@ -92,4 +91,9 @@ You can get help on subcommands by using the -h option to the subcommand.
     def parse(self, argv):
         log.debug("paisley", "paisley %s" % " ".join(argv))
         logcommand.LogCommand.parse(self, argv)
+
+    def getDatabase(self):
+        if not self.options.database:
+            raise KeyError('Please specify a database with -d')
+        return self.options.database
 

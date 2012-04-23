@@ -11,6 +11,7 @@ from paisleycmd.extern.command import tcommand
 
 from paisleycmd.common import log
 from paisleycmd.common import logcommand
+from paisleycmd.command import view
 
 
 class Create(tcommand.TwistedCommand):
@@ -37,6 +38,6 @@ class List(tcommand.TwistedCommand):
 
 class Database(logcommand.LogCommand):
 
-    subCommandClasses = [Create, List]
+    subCommandClasses = [Create, List, view.View]
 
     description = 'Interact with databases.'
