@@ -20,7 +20,7 @@ def _getViews(c):
 
     res = yield c.getRootCommand().db.listDoc(
         c.getRootCommand().getDatabase(),
-        startKey="_design/", endKey="_design0", include_docs=True)
+        startkey="_design/", endkey="_design0", include_docs=True)
 
     for row in res['rows']:
         ret[row['key']] = []
