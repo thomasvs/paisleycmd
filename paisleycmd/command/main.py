@@ -30,7 +30,8 @@ couchdb_option_list = [
             default=_DEFAULT_PORT),
         optparse.Option('-D', '--database',
             action="store", dest="database",
-            help="CouchDB database name")
+            help="CouchDB database name",
+            default=None),
 ]
 
 
@@ -94,6 +95,6 @@ You can get help on subcommands by using the -h option to the subcommand.
 
     def getDatabase(self):
         if not self.options.database:
-            raise KeyError('Please specify a database with -d')
+            raise KeyError('Please specify a database with -D')
         return self.options.database
 
