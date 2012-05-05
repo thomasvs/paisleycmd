@@ -5,6 +5,8 @@
 The view command
 """
 
+import base64
+
 from twisted.internet import defer
 
 from paisleycmd.extern.command import tcommand
@@ -29,6 +31,86 @@ def _getViews(c):
             ret[row['key']].append(key)
 
     defer.returnValue(ret)
+
+
+class Dump(tcommand.TwistedCommand, logcommand.LogCommand):
+
+    usage = "%command [--key key] docid viewid"
+    description = """
+Dump view results.
+
+This dumps all documents for the given view in a format that couchdb-load
+understands.
+
+"""
+
+    def addOptions(self):
+        self.parser.add_option('-k', '--key',
+                          action="store", dest="key",
+                          help="key to query the view with")
+
+    def handleOptions(self, options):
+        print 'handleOptions'
+        self._kwargs = {}
+
+        if options.key:
+            self._kwargs['key'] = options.key
+
+        self._kwargs['reduce'] = False
+        self._kwargs['include_docs'] = True
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        if not args:
+            self.stderr.write('Please specify a design doc and view to dump.\n')
+            defer.returnValue(3)
+            return
+
+        docId = args[0]
+        viewId = args[1]
+
+        self.debug('requesting view in %r %r with kwargs %r',
+            docId, viewId, self._kwargs)
+
+        res = yield self.getRootCommand().db.openView(
+            self.getRootCommand().getDatabase(), docId, viewId,
+            **self._kwargs)
+
+        # adapted from couchdb.tools.dump
+        from couchdb.multipart import write_multipart
+        envelope = write_multipart(self.stdout, boundary=None)
+
+        for row in res['rows']:
+            doc = row['doc']
+
+            print >> self.stderr, 'Dumping document %r' % doc['_id']
+            attachments = doc.pop('_attachments', {})
+            jsondoc = json.dumps(doc)
+
+            if attachments:
+                parts = envelope.open({
+                    'Content-ID': doc['_id'],
+                    'ETag': '"%s"' % doc['_rev']
+                })
+                parts.add('application/json', jsondoc)
+
+                for name, info in attachments.items():
+                    content_type = info.get('content_type')
+                    if content_type is None: # CouchDB < 0.8
+                        content_type = info.get('content-type')
+                    parts.add(content_type, base64.b64decode(info['data']), {
+                        'Content-ID': name
+                    })
+                parts.close()
+
+            else:
+                envelope.add('application/json', jsondoc, {
+                    'Content-ID': doc['_id'],
+                    'ETag': '"%s"' % doc['_rev']
+                }, )
+
+            envelope.close()
+
 
 
 class List(tcommand.TwistedCommand):
@@ -76,6 +158,6 @@ class Size(tcommand.TwistedCommand):
 
 class View(logcommand.LogCommand):
 
-    subCommandClasses = [List, Size]
+    subCommandClasses = [Dump, List, Size]
 
     description = 'Interact with views.'
