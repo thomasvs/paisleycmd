@@ -7,8 +7,12 @@ The main entry point for the 'paisley' command-line application.
 
 import sys
 import optparse
+import subprocess
+
+from twisted.internet import defer
 
 from paisleycmd.extern.command import command
+from paisleycmd.extern.command import tcommand
 
 from paisleycmd.extern.paisley import client
 
@@ -57,6 +61,65 @@ def main(argv):
 
     return ret
 
+
+class Apply(tcommand.TwistedCommand):
+
+    description = """Apply a transformation to all documents."""
+
+    def addOptions(self):
+        self.parser.add_option('-d', '--dry-run',
+                          action="store_true", dest="dryrun",
+                          help="show documents that would be changed, "
+                            "without changing them")
+
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        if not args:
+            self.stderr.write('Please give command to apply.\n')
+            defer.returnValue(3)
+            return
+
+        if not self.parentCommand.options.database:
+            self.stderr.write(
+                'Please specify a database to apply commands on.\n')
+            defer.returnValue(3)
+            return
+
+        self.process = subprocess.Popen(
+            args, env=None, stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+
+
+        result = yield self.parentCommand.db.listDoc(
+            self.parentCommand.options.database, include_docs=True)
+
+        rows = 0
+        updated = 0
+
+        for row in result['rows']:
+            rows += 1
+            doc = row['doc']
+            self.debug('passing doc %r', doc)
+            self.process.stdin.write(client.json.dumps(doc) + '\n')
+            #print self.process.stderr.read()
+            result = self.process.stdout.readline().rstrip()
+            if result:
+                updated += 1
+                if self.options.dryrun:
+                    self.stdout.write("%s\n" % result.encode('utf-8'))
+                else:
+                    ret = yield self.parentCommand.db.saveDoc(
+                        self.parentCommand.options.database,
+                        result, row['key'])
+        self.process.terminate()
+        self.process.wait()
+
+        self.stdout.write('%d of %d documents changed.\n' % (
+            updated, rows))
+
+
 class Paisley(logcommand.LogCommand):
     usage = "%prog %command"
     description = """paisley is a CouchDB client.
@@ -65,7 +128,7 @@ paisley gives you a tree of subcommands to work with.
 You can get help on subcommands by using the -h option to the subcommand.
 """
 
-    subCommandClasses = [database.Database, ]
+    subCommandClasses = [Apply, database.Database, ]
 
     db = None
 
