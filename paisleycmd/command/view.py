@@ -108,7 +108,7 @@ understands.
                     'ETag': '"%s"' % doc['_rev']
                 }, )
 
-            envelope.close()
+        envelope.close()
 
 
 
