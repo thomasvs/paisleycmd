@@ -50,7 +50,6 @@ understands.
                           help="key to query the view with")
 
     def handleOptions(self, options):
-        print 'handleOptions'
         self._kwargs = {}
 
         if options.key:
