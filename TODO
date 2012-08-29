@@ -1,0 +1,1 @@
+- paisley database view size loads everything in memory and can get killed
