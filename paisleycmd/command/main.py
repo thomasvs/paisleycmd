@@ -158,6 +158,8 @@ You can get help on subcommands by using the -h option to the subcommand.
 
     def getDatabase(self):
         if not self.options.database:
-            raise KeyError('Please specify a database with -D')
+            raise KeyError(
+                '%s: Please specify a database with -D as an option' %
+                    self.getFullName())
         return self.options.database
 

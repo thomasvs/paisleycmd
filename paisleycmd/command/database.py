@@ -9,9 +9,41 @@ from twisted.internet import defer
 
 from paisleycmd.extern.command import tcommand
 
-from paisleycmd.common import log
 from paisleycmd.common import logcommand
+from paisleycmd.common import common
 from paisleycmd.command import view
+
+
+class Clean(tcommand.TwistedCommand):
+
+    description = """Clean old views for a database."""
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        if not args:
+            self.stderr.write('Please give database name to clean.\n')
+            defer.returnValue(3)
+            return
+
+        d = self.parentCommand.parentCommand.db.cleanDB(args[0])
+        d.addErrback(common.errback, self)
+
+        yield d
+
+class Compact(tcommand.TwistedCommand):
+
+    description = """Compact a database."""
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        if not args:
+            self.stderr.write('Please give database name to compact.\n')
+            defer.returnValue(3)
+            return
+
+        d = self.parentCommand.parentCommand.db.compactDB(args[0])
+        d.addErrback(common.errback, self)
+        yield d
 
 
 class Create(tcommand.TwistedCommand):
@@ -25,7 +57,9 @@ class Create(tcommand.TwistedCommand):
             defer.returnValue(3)
             return
 
-        yield self.parentCommand.parentCommand.db.createDB(args[0])
+        d = self.parentCommand.parentCommand.db.createDB(args[0])
+        d.addErrback(common.errback, self)
+        yield d
 
 
 class List(tcommand.TwistedCommand):
@@ -40,6 +74,6 @@ class List(tcommand.TwistedCommand):
 
 class Database(logcommand.LogCommand):
 
-    subCommandClasses = [Create, List, view.View]
+    subCommandClasses = [Clean, Compact, Create, List, view.View]
 
     description = 'Interact with databases.'

@@ -12,7 +12,7 @@ from twisted.internet import defer
 from paisleycmd.extern.command import tcommand
 from paisleycmd.extern.paisley.client import json
 
-from paisleycmd.common import logcommand
+from paisleycmd.common import logcommand, common
 
 
 # return: dict of design_doc -> list of view names
@@ -31,6 +31,29 @@ def _getViews(c):
             ret[row['key']].append(key)
 
     defer.returnValue(ret)
+
+class Compact(tcommand.TwistedCommand):
+
+    usage = """DESIGN_DOC"""
+    description = """Compact all views in a given design document.
+
+To see all design documents, use list.  Use the part after _design/ as the
+name.
+"""
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        if not args:
+            self.stderr.write('Please give a design document to compact.\n')
+            defer.returnValue(3)
+            return
+
+        db = self.getRootCommand().db
+        dbName = self.getRootCommand().getDatabase()
+
+        d = db.compactDesignDB(dbName, args[0])
+        d.addErrback(common.errback, self)
+        yield d
 
 
 class Dump(tcommand.TwistedCommand, logcommand.LogCommand):
@@ -157,6 +180,6 @@ class Size(tcommand.TwistedCommand):
 
 class View(logcommand.LogCommand):
 
-    subCommandClasses = [Dump, List, Size]
+    subCommandClasses = [Compact, Dump, List, Size]
 
     description = 'Interact with views.'
