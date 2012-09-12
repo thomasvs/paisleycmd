@@ -24,7 +24,7 @@
 Logging Command.
 """
 
-from paisleycmd.extern.command import command
+from paisleycmd.extern.command import command, tcommand
 from paisleycmd.common import log
 
 class LogCommand(command.Command, log.Loggable):
@@ -36,3 +36,8 @@ class LogCommand(command.Command, log.Loggable):
     def debug(self, format, *args):
         kwargs = {}
         log.Loggable.doLog(self, log.DEBUG, -2, format, *args, **kwargs)
+
+
+class TwistedLogCommand(tcommand.TwistedCommand, LogCommand):
+    pass
+

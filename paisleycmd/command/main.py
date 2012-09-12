@@ -18,7 +18,7 @@ from paisleycmd.extern.paisley import client
 
 from paisleycmd.common import log
 from paisleycmd.common import logcommand
-from paisleycmd.command import database
+from paisleycmd.command import database, user
 
 _DEFAULT_HOST = 'localhost'
 _DEFAULT_PORT = 5984
@@ -128,7 +128,7 @@ paisley gives you a tree of subcommands to work with.
 You can get help on subcommands by using the -h option to the subcommand.
 """
 
-    subCommandClasses = [Apply, database.Database, ]
+    subCommandClasses = [Apply, database.Database, user.User, ]
 
     db = None
 
@@ -163,3 +163,7 @@ You can get help on subcommands by using the -h option to the subcommand.
                     self.getFullName())
         return self.options.database
 
+    def getPassword(self, prompt='Password: '):
+        import getpass
+        return getpass.getpass(prompt)
+        
