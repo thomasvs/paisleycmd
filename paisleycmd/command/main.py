@@ -18,7 +18,7 @@ from paisleycmd.extern.paisley import client
 
 from paisleycmd.common import log
 from paisleycmd.common import logcommand
-from paisleycmd.command import database, user
+from paisleycmd.command import database, user, security
 
 _DEFAULT_HOST = 'localhost'
 _DEFAULT_PORT = 5984
@@ -128,7 +128,8 @@ paisley gives you a tree of subcommands to work with.
 You can get help on subcommands by using the -h option to the subcommand.
 """
 
-    subCommandClasses = [Apply, database.Database, user.User, ]
+    subCommandClasses = [Apply, database.Database, security.Security,
+        user.User, ]
 
     db = None
 
@@ -143,6 +144,10 @@ You can get help on subcommands by using the -h option to the subcommand.
         self.parser.add_option('-v', '--version',
                           action="store_true", dest="version",
                           help="show version information")
+
+        self.parser.add_option('-A', '--admin-user',
+                          action="store", dest="admin",
+                          help="Admin username", default="")
 
     def handleOptions(self, options):
         if options.version:
@@ -159,6 +164,16 @@ You can get help on subcommands by using the -h option to the subcommand.
     def getClient(self):
         return client.CouchDB(self.options.host, int(self.options.port))
 
+    def getAdminClient(self):
+        client = self.getClient()
+        if self.options.admin:
+            password = self.getPassword(
+                'Password for %s:' % self.options.admin)
+            client.username = self.options.admin
+            client.password = password
+
+        return client
+
     def getDatabase(self):
         if not self.options.database:
             raise KeyError(
@@ -168,5 +183,7 @@ You can get help on subcommands by using the -h option to the subcommand.
 
     def getPassword(self, prompt='Password: '):
         import getpass
-        return getpass.getpass(prompt)
-        
+        p = getpass.getpass(prompt)
+        self.stdout.write('\n')
+        return p
+

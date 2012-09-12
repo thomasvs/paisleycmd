@@ -71,7 +71,7 @@ class Add(logcommand.TwistedLogCommand):
 
         self.debug('Saving doc %r', doc)
         try:
-            d = self.parentCommand.getAdminClient().saveDoc('_users',
+            d = self.getRootCommand().getAdminClient().saveDoc('_users',
                 doc, docId)
         except Exception, e:
             self.warning('saveDoc triggered exception: %s',
@@ -116,7 +116,7 @@ class Delete(logcommand.TwistedLogCommand):
             defer.returnValue(3)
             return
 
-        client = self.parentCommand.getAdminClient()
+        client = self.getRootCommand().getAdminClient()
 
         failures = 0
 
@@ -187,17 +187,4 @@ class User(logcommand.LogCommand):
 
     description = 'Interact with the _users database'
 
-    def addOptions(self):
-        self.parser.add_option('-A', '--admin-user',
-                          action="store", dest="admin",
-                          help="Admin username", default="")
 
-    def getAdminClient(self):
-        client = self.getRootCommand().getClient()
-        if self.options.admin:
-            password = self.getRootCommand().getPassword(
-                'Password for %s:' % self.options.admin)
-            client.username = self.options.admin
-            client.password = password
-
-        return client
