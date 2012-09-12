@@ -1,3 +1,6 @@
 [submodule "paisleycmd/extern/paisley.git"]
 	path = paisleycmd/extern/paisley.git
 	url = git@github.com:thomasvs/paisley.git
+[submodule "paisleycmd/extern/python-command"]
+	path = paisleycmd/extern/python-command
+	url = https://github.com/thomasvs/python-command

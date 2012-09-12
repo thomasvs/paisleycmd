@@ -120,7 +120,7 @@ class Apply(tcommand.TwistedCommand):
             updated, rows))
 
 
-class Paisley(logcommand.LogCommand):
+class Paisley(tcommand.ReactorCommand, logcommand.LogCommand):
     usage = "%prog %command"
     description = """paisley is a CouchDB client.
 
@@ -156,10 +156,6 @@ You can get help on subcommands by using the -h option to the subcommand.
             sys.exit(0)
 
         self.db = self.getClient()
-
-    def parse(self, argv):
-        log.debug("paisley", "paisley %s" % " ".join(argv))
-        logcommand.LogCommand.parse(self, argv)
 
     def getClient(self):
         return client.CouchDB(self.options.host, int(self.options.port))
