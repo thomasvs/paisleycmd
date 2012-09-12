@@ -71,7 +71,7 @@ class Add(logcommand.TwistedLogCommand):
 
         self.debug('Saving doc %r', doc)
         try:
-            d = self.getRootCommand().db.saveDoc('_users',
+            d = self.parentCommand.getAdminClient().saveDoc('_users',
                 doc, docId)
         except Exception, e:
             self.warning('saveDoc triggered exception: %s',
@@ -104,55 +104,66 @@ class Add(logcommand.TwistedLogCommand):
 
 class Delete(logcommand.TwistedLogCommand):
 
-    description = """Delete user"""
+    usage = """USER [.. USER]"""
+    description = """Delete given user(s)"""
 
 
     @defer.inlineCallbacks
     def doLater(self, args):
         if not args:
             self.stderr.write(
-                'Please specify the name of the user to delete.\n')
+                'Please specify the name of the user(s) to delete.\n')
             defer.returnValue(3)
             return
 
-        user = args[0]
+        client = self.parentCommand.getAdminClient()
 
-        docId = "org.couchdb.user:" + user
+        failures = 0
 
-        try:
-            result = yield self.getRootCommand().db.openDoc('_users', docId)
-        except Exception, e:
-            raise
+        for user in args:
 
-        self.debug('Deleting docId %s at revision %s', docId, result['_rev'])
-        try:
-            d = self.getRootCommand().db.deleteDoc('_users', docId,
-                result['_rev'])
-        except Exception, e:
-            self.warning('deleteDoc triggered exception: %s',
-                log.getExceptionMessage(e))
-            raise
+            self.debug('Deleting user %r', user)
+            docId = "org.couchdb.user:" + user
 
-        try:
-            result = yield d
-        except error.Error, e:
-            if e.status == 409:
-                self.stderr.write("Error: the user '%s' already exists.\n" %
-                    user)
-                defer.returnValue(3)
-                return
+            try:
+                result = yield client.openDoc('_users', docId)
+            except error.Error, e:
+                if e.status == http.NOT_FOUND:
+                    self.stderr.write("Could not find user '%s'\n" % user)
+                    failures += 1
+                    continue
+                raise
+            except Exception, e:
+                raise
 
-            self.stderr.write("Error: %s\n" % e.reason)
-            raise
-        except Exception, e:
-            self.warning('yielding deleteDoc triggered exception: %s',
-                log.getExceptionMessage(e))
-            raise
+            self.debug('Deleting docId %s at revision %s', docId, result['_rev'])
+            try:
+                d = client.deleteDoc('_users', docId,
+                    result['_rev'])
+            except Exception, e:
+                self.warning('deleteDoc triggered exception: %s',
+                    log.getExceptionMessage(e))
+                self.stderr.write("Could not delete user '%s'\n" % user)
+                failures += 1
+                continue
 
-        if result['ok']:
-            self.stdout.write("Deleted user '%s'.\n" % user)
-        else:
-            self.stdout.write("Unknown error.  Result: %r\n" % result)
+            try:
+                result = yield d
+            except error.Error, e:
+                self.stderr.write("Error: %s\n" % e.reason)
+                failures += 1
+                continue
+            except Exception, e:
+                self.warning('yielding deleteDoc triggered exception: %s',
+                    log.getExceptionMessage(e))
+                failures += 1
+                continue
+
+            if result['ok']:
+                self.stdout.write("Deleted user '%s'.\n" % user)
+            else:
+                self.stdout.write("Unknown error.  Result: %r\n" % result)
+                failures += 1
 
 
 class List(logcommand.TwistedLogCommand):
@@ -175,3 +186,18 @@ class User(logcommand.LogCommand):
     subCommandClasses = [Add, Delete, List]
 
     description = 'Interact with the _users database'
+
+    def addOptions(self):
+        self.parser.add_option('-A', '--admin-user',
+                          action="store", dest="admin",
+                          help="Admin username", default="")
+
+    def getAdminClient(self):
+        client = self.getRootCommand().getClient()
+        if self.options.admin:
+            password = self.getRootCommand().getPassword(
+                'Password for %s:' % self.options.admin)
+            client.username = self.options.admin
+            client.password = password
+
+        return client

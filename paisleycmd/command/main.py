@@ -150,11 +150,14 @@ You can get help on subcommands by using the -h option to the subcommand.
             print "paisley %s" % configure.version
             sys.exit(0)
 
-        self.db = client.CouchDB(options.host, int(options.port))
+        self.db = self.getClient()
 
     def parse(self, argv):
         log.debug("paisley", "paisley %s" % " ".join(argv))
         logcommand.LogCommand.parse(self, argv)
+
+    def getClient(self):
+        return client.CouchDB(self.options.host, int(self.options.port))
 
     def getDatabase(self):
         if not self.options.database:
