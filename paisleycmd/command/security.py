@@ -13,23 +13,80 @@ from paisleycmd.extern.paisley import pjson as json
 from paisleycmd.common import logcommand
 from paisleycmd.common import log
 
-
-class List(logcommand.TwistedLogCommand):
-
-    description = """List contents of _security document for a database"""
-
+class SecurityCommand(logcommand.TwistedLogCommand):
 
     @defer.inlineCallbacks
-    def doLater(self, args):
-        client = self.getRootCommand().getAdminClient()
-        db = self.getRootCommand().getDatabase()
+    def getSecurity(self):
+        self.client = self.getRootCommand().getAdminClient()
+        self.db = self.getRootCommand().getDatabase()
 
         try:
-            result = yield client.openDoc(db, '_security')
+            result = yield self.client.openDoc(self.db, '_security')
         except error.Error, e:
             raise
         except Exception, e:
             raise
+
+        defer.returnValue(result)
+
+class Add(SecurityCommand):
+
+    description = """List contents of _security document for a database"""
+
+    def addOptions(self):
+        self.parser.add_option('-p', '--permission',
+                          action="store", dest="permission",
+                          help="admin or reader (defaults to %default", 
+                          default="reader")
+        self.parser.add_option('-t', '--type',
+                          action="store", dest="type",
+                          help="name or role (defaults to %default", 
+                          default="name")
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+
+        security = yield self.getSecurity()
+
+        # fill in all missing bits
+        for p in ['admins', 'readers']:
+            if not p in security:
+                security[p] = {}
+            for t in ['names', 'roles']:
+                if not t in security[p]:
+                    security[p][t] = []
+
+        print security
+
+        self.debug('Adding %s(s) %r to permission %s',
+            self.options.type, args, self.options.permission)
+        p = self.options.permission + 's'
+        t = self.options.type + 's'
+        if not p in security:
+            security[p] = {}
+        if not t in security[p]:
+            security[p][t] = []
+
+        security[p][t].extend(args)
+
+        # make sure we only have each item listed once
+        security[p][t] = list(set(security[p][t]))
+
+        result = yield self.client.saveDoc(self.db, security, '_security')
+
+        if result['ok']:
+            self.stdout.write("Security object changed.\n")
+        else:
+            self.stdout.write("Unknown error.  Result: %r\n" % result)
+
+class List(SecurityCommand):
+
+    description = """List contents of _security document for a database"""
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+
+        result = yield self.getSecurity()
 
         for key, value in result.items():
             names = value['names']
@@ -43,8 +100,6 @@ class List(logcommand.TwistedLogCommand):
 
 class Security(logcommand.LogCommand):
 
-    subCommandClasses = [List]
+    subCommandClasses = [Add, List]
 
     description = 'Interact with a database\'s  _security document'
-
-
