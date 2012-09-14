@@ -31,16 +31,16 @@ class SecurityCommand(logcommand.TwistedLogCommand):
 
 class Add(SecurityCommand):
 
-    description = """List contents of _security document for a database"""
+    description = """Add admin or reader to security object"""
 
     def addOptions(self):
         self.parser.add_option('-p', '--permission',
                           action="store", dest="permission",
-                          help="admin or reader (defaults to %default", 
+                          help="admin or reader (defaults to %default)", 
                           default="reader")
         self.parser.add_option('-t', '--type',
                           action="store", dest="type",
-                          help="name or role (defaults to %default", 
+                          help="name or role (defaults to %default)", 
                           default="name")
 
     @defer.inlineCallbacks
@@ -55,8 +55,6 @@ class Add(SecurityCommand):
             for t in ['names', 'roles']:
                 if not t in security[p]:
                     security[p][t] = []
-
-        print security
 
         self.debug('Adding %s(s) %r to permission %s',
             self.options.type, args, self.options.permission)
