@@ -76,18 +76,6 @@ want to transform the document, or the transformed version of the document
 if it does.
 """
 
-
-    @defer.inlineCallbacks
-    def handledRow(self, row, result):
-        if result:
-            self._updated += 1
-            if self.options.dryrun:
-                self.stdout.write("%s\n" % result.encode('utf-8'))
-            else:
-                ret = yield db.saveDoc(
-                    self.getRootCommand().getDatabase(),
-                    result, row['key'])
-
     @defer.inlineCallbacks
     def doLater(self, args):
         self._updated = 0
@@ -97,10 +85,68 @@ if it does.
         self.stdout.write('%d of %d documents changed.\n' % (
             self._updated, self.rows))
 
+    @defer.inlineCallbacks
+    def handledRow(self, row, result):
+        db = self.getRootCommand().getClient()
+
+        if result:
+            self._updated += 1
+            if self.options.dryrun:
+                self.stdout.write("%s\n" % result.encode('utf-8'))
+            else:
+                ret = yield db.saveDoc(
+                    self.getRootCommand().getDatabase(),
+                    result, row['key'])
+
+class Delete(_ScriptCommand):
+
+    usage = """DELETE_SCRIPT"""
+    summary = "Delete documents selected by the delete script"
+
+    description = """
+Delete documents selected by the delete script.
+
+The script will receive each document, JSON-encoded, on a single line.
+
+The script should output an empty line for each input line if it doesn't
+want to delete the document, or the word 'DELETE' if it does.
+"""
+    def addOptions(self):
+        _ScriptCommand.addOptions(self)
+        self.parser.add_option('-v', '--verbose',
+                          action="store_true", dest="verbose",
+                          help="show full documents")
+
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        self._deleted = 0
+
+        yield self.doScript(args)
+
+        self.stdout.write('%d of %d documents deleted.\n' % (
+            self._deleted, self.rows))
+
+    @defer.inlineCallbacks
+    def handledRow(self, row, result):
+
+        db = self.getRootCommand().getClient()
+        if result == 'DELETE':
+            self._deleted += 1
+            if self.options.dryrun:
+                if self.options.verbose:
+                    self.stdout.write('Deleting doc %r\n' % row['doc'])
+                else:
+                    self.stdout.write('Deleting id %r\n' % row['key'])
+            else:
+                ret = yield db.deleteDoc(
+                    self.getRootCommand().getDatabase(),
+                    row['key'], row['doc']['_rev'])
+
 
 class Document(logcommand.LogCommand):
 
-    subCommandClasses = [Apply]
+    subCommandClasses = [Apply, Delete]
     aliases = ['doc', ]
 
     description = 'Interact with documents'
