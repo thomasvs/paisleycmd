@@ -7,7 +7,6 @@ The main entry point for the 'paisley' command-line application.
 
 import sys
 import optparse
-import subprocess
 
 from twisted.internet import defer
 

@@ -5,9 +5,12 @@
 The document command
 """
 
+import subprocess
 import base64
 
 from twisted.internet import defer
+
+from paisleycmd.extern.paisley import client
 
 from paisleycmd.extern.command import tcommand
 
@@ -41,20 +44,15 @@ if it does.
             defer.returnValue(3)
             return
 
-        if not self.parentCommand.options.database:
-            self.stderr.write(
-                'Please specify a database to apply commands on.\n')
-            defer.returnValue(3)
-            return
-
         self.process = subprocess.Popen(
             args, env=None, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 
 
-        result = yield self.parentCommand.db.listDoc(
-            self.parentCommand.options.database, include_docs=True)
+        db = self.getRootCommand().getClient()
+        result = yield db.listDoc(
+            self.getRootCommand().getDatabase(), include_docs=True)
 
         rows = 0
         updated = 0
@@ -71,8 +69,8 @@ if it does.
                 if self.options.dryrun:
                     self.stdout.write("%s\n" % result.encode('utf-8'))
                 else:
-                    ret = yield self.parentCommand.db.saveDoc(
-                        self.parentCommand.options.database,
+                    ret = yield db.saveDoc(
+                        self.getRootCommand().getDatabase(),
                         result, row['key'])
         self.process.terminate()
         self.process.wait()
