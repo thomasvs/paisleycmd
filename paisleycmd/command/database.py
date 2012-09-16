@@ -76,4 +76,6 @@ class Database(logcommand.LogCommand):
 
     subCommandClasses = [Clean, Compact, Create, List, view.View]
 
+    aliases = ['db', ]
+
     description = 'Interact with databases.'

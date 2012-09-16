@@ -2,9 +2,9 @@
 # -*- Mode: Python -*-
 # vi:si:et:sw=4:sts=4:ts=4
 
-# This is an example of a filter to use for paisley apply
+# This is an example of a filter to use for paisley database document apply
 # Sample run:
-# paisley -D daddup apply examples/removename.py
+# paisley -D daddup document apply examples/apply-removename.py
 
 import sys
 

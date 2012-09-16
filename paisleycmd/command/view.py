@@ -149,6 +149,9 @@ class List(tcommand.TwistedCommand):
                 self.stdout.write('  %s\n' % view.encode('utf-8'))
 
 class Size(tcommand.TwistedCommand):
+
+    summary = "show size used by views"
+
     @defer.inlineCallbacks
     def doLater(self, args):
         db = self.getRootCommand().db
