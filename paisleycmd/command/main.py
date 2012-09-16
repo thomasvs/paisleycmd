@@ -65,6 +65,8 @@ def main(argv):
 class Apply(tcommand.TwistedCommand):
 
     usage = """APPLY_SCRIPT"""
+    summary = "apply a transformation to all documents"
+
     description = """
 Apply a transformation to all documents.
 
