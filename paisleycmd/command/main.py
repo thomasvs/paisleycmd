@@ -64,7 +64,15 @@ def main(argv):
 
 class Apply(tcommand.TwistedCommand):
 
-    description = """Apply a transformation to all documents."""
+    usage = """APPLY_SCRIPT"""
+    description = """
+Apply a transformation to all documents.
+
+The script will receive each document, JSON-encoded, on a single line.
+The script should output an empty line for each input line if it doesn't
+want to transform the document, or the transformed version of the document
+if it does.
+"""
 
     def addOptions(self):
         self.parser.add_option('-d', '--dry-run',
