@@ -16,19 +16,7 @@ from paisleycmd.extern.command import tcommand
 
 from paisleycmd.common import logcommand
 
-class Apply(tcommand.TwistedCommand):
-
-    usage = """APPLY_SCRIPT"""
-    summary = "apply a transformation to all documents"
-
-    description = """
-Apply a transformation to all documents.
-
-The script will receive each document, JSON-encoded, on a single line.
-The script should output an empty line for each input line if it doesn't
-want to transform the document, or the transformed version of the document
-if it does.
-"""
+class _ScriptCommand(tcommand.TwistedCommand):
 
     def addOptions(self):
         self.parser.add_option('-d', '--dry-run',
@@ -38,9 +26,11 @@ if it does.
 
 
     @defer.inlineCallbacks
-    def doLater(self, args):
+    def doScript(self, args):
+        self.rows = 0
+
         if not args:
-            self.stderr.write('Please give command to apply.\n')
+            self.stderr.write('Please give script to apply.\n')
             defer.returnValue(3)
             return
 
@@ -54,29 +44,58 @@ if it does.
         result = yield db.listDoc(
             self.getRootCommand().getDatabase(), include_docs=True)
 
-        rows = 0
-        updated = 0
-
         for row in result['rows']:
-            rows += 1
+            self.rows += 1
             doc = row['doc']
             self.debug('passing doc %r', doc)
             self.process.stdin.write(client.json.dumps(doc) + '\n')
             #print self.process.stderr.read()
             result = self.process.stdout.readline().rstrip()
-            if result:
-                updated += 1
-                if self.options.dryrun:
-                    self.stdout.write("%s\n" % result.encode('utf-8'))
-                else:
-                    ret = yield db.saveDoc(
-                        self.getRootCommand().getDatabase(),
-                        result, row['key'])
+            yield self.handledRow(row, result)
+
         self.process.terminate()
         self.process.wait()
 
+    def handledRow(self, row, result):
+        """
+        @rtype: L{defer.Deferred}
+        """
+        raise NotImplementedError
+
+class Apply(_ScriptCommand):
+
+    usage = """APPLY_SCRIPT"""
+    summary = "apply a transformation to all documents"
+
+    description = """
+Apply a transformation to all documents.
+
+The script will receive each document, JSON-encoded, on a single line.
+The script should output an empty line for each input line if it doesn't
+want to transform the document, or the transformed version of the document
+if it does.
+"""
+
+
+    @defer.inlineCallbacks
+    def handledRow(self, row, result):
+        if result:
+            self._updated += 1
+            if self.options.dryrun:
+                self.stdout.write("%s\n" % result.encode('utf-8'))
+            else:
+                ret = yield db.saveDoc(
+                    self.getRootCommand().getDatabase(),
+                    result, row['key'])
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        self._updated = 0
+
+        yield self.doScript(args)
+
         self.stdout.write('%d of %d documents changed.\n' % (
-            updated, rows))
+            self._updated, self.rows))
 
 
 class Document(logcommand.LogCommand):

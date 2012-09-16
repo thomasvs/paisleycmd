@@ -4,7 +4,7 @@
 
 # This is an example of a filter to use for paisley database document apply
 # Sample run:
-# paisley -D daddup document apply examples/apply-removename.py
+# paisley -D daddup document apply --dry-run examples/apply-removename.py
 
 import sys
 
