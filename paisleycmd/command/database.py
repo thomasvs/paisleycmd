@@ -57,7 +57,8 @@ class Create(tcommand.TwistedCommand):
             defer.returnValue(3)
             return
 
-        d = self.parentCommand.parentCommand.db.createDB(args[0])
+        client = self.getRootCommand().getAdminClient()
+        d = client.createDB(args[0])
         d.addErrback(common.errback, self)
         yield d
 
