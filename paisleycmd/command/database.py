@@ -39,7 +39,7 @@ class Clean(_DBCommand):
     def doLater(self, args):
         db = self.getDB(args, 'clean')
 
-        client = self.parentCommand.parentCommand.getAdminClient()
+        client = self.getRootCommand().getAdminClient()
         d = client.cleanDB(db)
         d.addErrback(common.errback, self)
 
@@ -53,7 +53,7 @@ class Compact(_DBCommand):
     def doLater(self, args):
         db = self.getDB(args, 'compact')
 
-        client = self.parentCommand.parentCommand.getAdminClient()
+        client = self.getRootCommand().getAdminClient()
         d = client.compactDB(db)
         d.addErrback(common.errback, self)
         yield d
@@ -67,7 +67,7 @@ class Create(_DBCommand):
     def doLater(self, args):
         db = self.getDB(args, 'create')
 
-        client = self.parentCommand.parentCommand.getAdminClient()
+        client = self.getRootCommand().getAdminClient()
         d = client.createDB(db)
         d.addErrback(common.errback, self)
         yield d
@@ -78,7 +78,7 @@ class List(tcommand.TwistedCommand):
 
     @defer.inlineCallbacks
     def doLater(self, args):
-        client = self.parentCommand.parentCommand.getAdminClient()
+        client = self.getRootCommand().getAdminClient()
         gen = yield client.listDB()
         for name in gen:
             self.stdout.write('%s\n' % name)
