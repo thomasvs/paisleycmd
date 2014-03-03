@@ -34,26 +34,38 @@ def _getViews(c):
 
 class Compact(tcommand.TwistedCommand):
 
-    usage = """DESIGN_DOC"""
-    description = """Compact all views in a given design document.
+    usage = """[-a] [DESIGN_DOC_NAME]"""
+    description = """Compact all views in the given design document.
 
 To see all design documents, use list.  Use the part after _design/ as the
 name.
 """
+    def addOptions(self):
+        self.parser.add_option('-a', '--all',
+                          action="store_true", dest="all",
+                          help="compact views in all design documents")
+
 
     @defer.inlineCallbacks
     def doLater(self, args):
-        if not args:
+        if not args and not self.options.all:
             self.stderr.write('Please give a design document to compact.\n')
             defer.returnValue(3)
             return
 
-        db = self.getRootCommand().db
-        dbName = self.getRootCommand().getDatabase()
+        client = self.getRootCommand().getClient()
+        db = self.getRootCommand().getDatabase()
 
-        d = db.compactDesignDB(dbName, args[0])
-        d.addErrback(common.errback, self)
-        yield d
+        if self.options.all:
+            res = yield _getViews(self)
+
+            for design, views in res.items():
+                name = design[len('_design/'):]
+                self.stdout.write('Compacting views in design document %s\n' % (
+                    name))
+                d = client.compactDesignDB(db, name)
+                d.addErrback(common.errback, self)
+                yield d
 
 
 class Dump(tcommand.TwistedCommand, logcommand.LogCommand):

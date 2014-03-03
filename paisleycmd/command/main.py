@@ -7,6 +7,7 @@ The main entry point for the 'paisley' command-line application.
 
 import sys
 import optparse
+import warnings
 
 from paisleycmd.extern.command import command
 from paisleycmd.extern.command import tcommand
@@ -16,6 +17,7 @@ from paisleycmd.extern.paisley import client
 from paisleycmd.common import log
 from paisleycmd.common import logcommand
 from paisleycmd.command import database, document, user, security
+from paisleycmd.configure import configure
 
 _DEFAULT_HOST = 'localhost'
 _DEFAULT_PORT = 5984
@@ -41,6 +43,10 @@ couchdb_option_list = [
 
 
 def main(argv):
+
+    if not configure.isinstalled:
+        # good boy, you deserve to help us fix warnings
+        warnings.simplefilter('default')
 
     c = Paisley()
 
@@ -89,15 +95,15 @@ You can get help on subcommands by using the -h option to the subcommand.
                           action="store_true", dest="version",
                           help="show version information")
 
-        self.parser.add_option('-a', '--admin-user',
-                          action="store", dest="admin",
-                          help="Admin username", default="")
-        self.parser.add_option('-p', '--admin-password',
+        self.parser.add_option('-u', '--username',
+                          action="store", dest="username",
+                          help="username", default="")
+        self.parser.add_option('-p', '--password',
                           action="store", dest="password",
-                          help="Admin password", default="")
-        self.parser.add_option('-f', '--admin-password-file',
+                          help="password", default=None)
+        self.parser.add_option('-f', '--password-file',
                           action="store", dest="password_file",
-                          help="Admin password file", default="")
+                          help="password file", default="")
 
 
 
@@ -114,15 +120,22 @@ You can get help on subcommands by using the -h option to the subcommand.
         if self.options.ssl:
             protocol = 'https'
 
-        return client.CouchDB(self.options.host, int(self.options.port),
+        c = client.CouchDB(self.options.host, int(self.options.port),
             protocol=protocol)
 
-    def getAdminClient(self):
-        client = self.getClient()
+        password = None
 
-        if self.options.admin:
-            password = None
+        # if -P without specified password, prompt for it
+        if self.options.password == "":
+            password = self.getPassword(
+                'Password for user %s:' % self.options.username)
 
+        # if -P with specified, use it
+        if self.options.password:
+            password = self.options.password
+
+        # if we have a password file, use it
+        if not password:
             if self.options.password_file:
                 try:
                     with open(self.options.password_file, "r") as handle:
@@ -132,17 +145,20 @@ You can get help on subcommands by using the -h option to the subcommand.
                         "ERROR: Could not read password from file %s\n" % (
                             self.options.password_file, ))
 
-            if not password:
-                password = self.options.password
+        if self.options.username:
+            c.username = self.options.username
+        if password:
+            c.password = password
 
-            if not password:
-                password = self.getPassword(
-                    'Password for %s:' % self.options.admin)
+        return c
 
-            client.username = self.options.admin
-            client.password = password
+    def getAdminClient(self):
+        warnings.warn("getAdminClient is deprecated in favor of getClient",
+            DeprecationWarning, stacklevel=2)
 
-        return client
+        return self.getClient()
+
+
 
     def getDatabase(self):
         if not self.options.database:
