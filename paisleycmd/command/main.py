@@ -33,6 +33,10 @@ couchdb_option_list = [
             action="store", dest="database",
             help="CouchDB database name",
             default=None),
+        optparse.Option('-S', '--ssl',
+            action="store_true", dest="ssl",
+            help="Use SSL for connection",
+            default=None),
 ]
 
 
@@ -106,10 +110,16 @@ You can get help on subcommands by using the -h option to the subcommand.
         self.db = self.getClient()
 
     def getClient(self):
-        return client.CouchDB(self.options.host, int(self.options.port))
+        protocol = 'http'
+        if self.options.ssl:
+            protocol = 'https'
+
+        return client.CouchDB(self.options.host, int(self.options.port),
+            protocol=protocol)
 
     def getAdminClient(self):
         client = self.getClient()
+
         if self.options.admin:
             password = None
 
