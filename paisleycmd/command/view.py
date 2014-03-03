@@ -9,7 +9,7 @@ import base64
 
 from twisted.internet import defer
 
-from paisleycmd.extern.command import tcommand
+from paisleycmd.extern.command import command, tcommand
 from paisleycmd.extern.paisley.client import json
 
 from paisleycmd.common import logcommand, common
@@ -134,6 +134,37 @@ understands.
         envelope.close()
 
 
+class Get(tcommand.TwistedCommand):
+
+    description = """Get views"""
+
+    def addOptions(self):
+        self.parser.add_option('-d', '--design',
+            action="store", dest="design",
+            help="name of the design doc (without leading _design/")
+        self.parser.add_option('-v', '--view',
+            action="store", dest="view",
+            help="name of the view")
+
+    def handleOptions(self, options):
+        self._options = options
+
+    @defer.inlineCallbacks
+    def doLater(self, args):
+        if not self._options.design:
+            raise command.CommandError(
+                "Please specify the name of a design document with -d"
+                "(without the leading _design/).")
+
+        if not self._options.view:
+            raise command.CommandError(
+                "Please specify the name of a view with -v")
+
+        res = yield self.getRootCommand().db.openView(
+            self.getRootCommand().getDatabase(),
+            self._options.design,
+            self._options.view)
+
 
 class List(tcommand.TwistedCommand):
 
@@ -183,6 +214,6 @@ class Size(tcommand.TwistedCommand):
 
 class View(logcommand.LogCommand):
 
-    subCommandClasses = [Compact, Dump, List, Size]
+    subCommandClasses = [Compact, Dump, Get, List, Size]
 
     description = 'Interact with views.'
