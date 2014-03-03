@@ -8,8 +8,6 @@ The main entry point for the 'paisley' command-line application.
 import sys
 import optparse
 
-from twisted.internet import defer
-
 from paisleycmd.extern.command import command
 from paisleycmd.extern.command import tcommand
 
