@@ -31,18 +31,16 @@ class _DBCommand(tcommand.TwistedCommand):
         return db
 
 
-class Clean(tcommand.TwistedCommand):
+class Clean(_DBCommand):
 
     description = """Clean old views for a database."""
 
     @defer.inlineCallbacks
     def doLater(self, args):
-        if not args:
-            self.stderr.write('Please give database name to clean.\n')
-            defer.returnValue(3)
-            return
+        db = self.getDB(args, 'clean')
 
-        d = self.parentCommand.parentCommand.db.cleanDB(args[0])
+        client = self.parentCommand.parentCommand.getAdminClient()
+        d = client.cleanDB(db)
         d.addErrback(common.errback, self)
 
         yield d
