@@ -37,11 +37,15 @@ class Compact(tcommand.TwistedCommand):
     @defer.inlineCallbacks
     def doLater(self, args):
         if not args:
+            db = self.getRootCommand().getDatabase()
+        else:
+            db = args[0]
+        if not db:
             self.stderr.write('Please give database name to compact.\n')
             defer.returnValue(3)
             return
 
-        d = self.parentCommand.parentCommand.db.compactDB(args[0])
+        d = self.parentCommand.parentCommand.getAdminClient().compactDB(db)
         d.addErrback(common.errback, self)
         yield d
 

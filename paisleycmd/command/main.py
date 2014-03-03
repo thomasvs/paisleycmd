@@ -87,9 +87,17 @@ You can get help on subcommands by using the -h option to the subcommand.
                           action="store_true", dest="version",
                           help="show version information")
 
-        self.parser.add_option('-A', '--admin-user',
+        self.parser.add_option('-a', '--admin-user',
                           action="store", dest="admin",
                           help="Admin username", default="")
+        self.parser.add_option('-p', '--admin-password',
+                          action="store", dest="password",
+                          help="Admin password", default="")
+        self.parser.add_option('-f', '--admin-password-file',
+                          action="store", dest="password_file",
+                          help="Admin password file", default="")
+
+
 
     def handleOptions(self, options):
         if options.version:
@@ -105,8 +113,24 @@ You can get help on subcommands by using the -h option to the subcommand.
     def getAdminClient(self):
         client = self.getClient()
         if self.options.admin:
-            password = self.getPassword(
-                'Password for %s:' % self.options.admin)
+            password = None
+
+            if self.options.password_file:
+                try:
+                    with open(self.options.password_file, "r") as handle:
+                        password = handle.read().strip()
+                except:
+                    self.stderr.write(
+                        "ERROR: Could not read password from file %s\n" % (
+                            self.options.password_file, ))
+
+            if not password:
+                password = self.options.password
+
+            if not password:
+                password = self.getPassword(
+                    'Password for %s:' % self.options.admin)
+
             client.username = self.options.admin
             client.password = password
 
