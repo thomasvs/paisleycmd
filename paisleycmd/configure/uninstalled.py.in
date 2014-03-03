@@ -1,0 +1,17 @@
+# -*- Mode: Python -*-
+# vi:si:et:sw=4:sts=4:ts=4
+
+import os.path
+
+from paisleycmd.common import common
+
+
+__thisdir = os.path.dirname(os.path.abspath(__file__))
+
+
+def get():
+    return {
+        'isinstalled': False,
+        'version': '@VERSION@',
+        'revision': common.getRevision(),
+    }
