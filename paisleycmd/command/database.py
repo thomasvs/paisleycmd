@@ -7,11 +7,28 @@ The database command
 
 from twisted.internet import defer
 
-from paisleycmd.extern.command import tcommand
+from paisleycmd.extern.command import command, tcommand
 
 from paisleycmd.common import logcommand
 from paisleycmd.common import common
 from paisleycmd.command import view
+
+
+class _DBCommand(tcommand.TwistedCommand):
+
+    def getDB(self, args, operation=None):
+        if not args:
+            db = self.getRootCommand().getDatabase()
+        else:
+            db = args[0]
+
+        if not db:
+            if operation:
+                msg = 'Please give database name to %s.' % (operation, )
+                self.stderr.write("%s\n" % (msg, ))
+                raise command.CommandError(msg)
+
+        return db
 
 
 class Clean(tcommand.TwistedCommand):
@@ -30,42 +47,32 @@ class Clean(tcommand.TwistedCommand):
 
         yield d
 
-class Compact(tcommand.TwistedCommand):
+class Compact(_DBCommand):
 
     description = """Compact a database."""
 
     @defer.inlineCallbacks
     def doLater(self, args):
-        if not args:
-            db = self.getRootCommand().getDatabase()
-        else:
-            db = args[0]
-        if not db:
-            self.stderr.write('Please give database name to compact.\n')
-            defer.returnValue(3)
-            return
+        db = self.getDB(args, 'compact')
 
-        d = self.parentCommand.parentCommand.getAdminClient().compactDB(db)
+        client = self.parentCommand.parentCommand.getAdminClient()
+        d = client.compactDB(db)
         d.addErrback(common.errback, self)
         yield d
 
 
-class Create(tcommand.TwistedCommand):
+class Create(_DBCommand):
 
     description = """Create a database."""
 
     @defer.inlineCallbacks
     def doLater(self, args):
-        if not args:
-            self.stderr.write('Please give database name to create.\n')
-            defer.returnValue(3)
-            return
+        db = self.getDB(args, 'create')
 
-        client = self.getRootCommand().getAdminClient()
-        d = client.createDB(args[0])
+        client = self.parentCommand.parentCommand.getAdminClient()
+        d = client.createDB(db)
         d.addErrback(common.errback, self)
         yield d
-
 
 class List(tcommand.TwistedCommand):
 
@@ -73,7 +80,8 @@ class List(tcommand.TwistedCommand):
 
     @defer.inlineCallbacks
     def doLater(self, args):
-        gen = yield self.parentCommand.parentCommand.db.listDB()
+        client = self.parentCommand.parentCommand.getAdminClient()
+        gen = yield client.listDB()
         for name in gen:
             self.stdout.write('%s\n' % name)
 
