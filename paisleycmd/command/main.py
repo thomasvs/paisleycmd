@@ -16,7 +16,7 @@ from paisleycmd.extern.paisley import client
 
 from paisleycmd.common import log
 from paisleycmd.common import logcommand
-from paisleycmd.command import database, document, user, security
+from paisleycmd.command import database, document, user, security, task
 from paisleycmd.configure import configure
 
 _DEFAULT_HOST = 'localhost'
@@ -79,6 +79,7 @@ You can get help on subcommands by using the -h option to the subcommand.
 
     subCommandClasses = [database.Database, document.Document,
         security.Security,
+        task.Task,
         user.User, ]
 
     db = None
@@ -87,9 +88,11 @@ You can get help on subcommands by using the -h option to the subcommand.
         self.parser.add_options(couchdb_option_list)
         # FIXME: is this the right place ?
         log.init()
-        # from dad.configure import configure
-        log.debug("paisley", "This is paisley version %s (%s)", "0.0.0", "0")
-        #    configure.version, configure.revision)
+        from paisleycmd.configure import configure
+        log.debug("paisley", "This is paisley version %s (%s)",
+            configure.version, configure.revision)
+        log.logTwisted()
+        log.adaptStandardLogging('paisley', 'paisley', 'paisley')
 
         self.parser.add_option('-v', '--version',
                           action="store_true", dest="version",

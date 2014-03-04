@@ -8,5 +8,6 @@ paisleycmd_PYTHON = \
 	document.py \
 	main.py     \
 	security.py \
+	task.py     \
 	user.py     \
 	view.py
