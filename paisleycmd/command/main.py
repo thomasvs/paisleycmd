@@ -16,7 +16,8 @@ from paisleycmd.extern.paisley import client
 
 from paisleycmd.common import log
 from paisleycmd.common import logcommand
-from paisleycmd.command import database, document, user, security, task
+from paisleycmd.command import database, document, replicate, security, task
+from paisleycmd.command import user
 from paisleycmd.configure import configure
 
 _DEFAULT_HOST = 'localhost'
@@ -77,7 +78,10 @@ paisley gives you a tree of subcommands to work with.
 You can get help on subcommands by using the -h option to the subcommand.
 """
 
-    subCommandClasses = [database.Database, document.Document,
+    subCommandClasses = [
+        database.Database,
+        document.Document,
+        replicate.Replicate,
         security.Security,
         task.Task,
         user.User, ]

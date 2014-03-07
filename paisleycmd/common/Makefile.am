@@ -6,4 +6,5 @@ paisleycmd_PYTHON = \
 	__init__.py \
 	common.py \
 	log.py \
-	logcommand.py
+	logcommand.py \
+	urlrewrite.py

@@ -7,6 +7,7 @@ paisleycmd_PYTHON = \
 	database.py \
 	document.py \
 	main.py     \
+	replicate.py \
 	security.py \
 	task.py     \
 	user.py     \
