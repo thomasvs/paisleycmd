@@ -5,9 +5,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = paisleycmd bin etc m4 misc doc
 
-BUILT_SOURCES = REVISION
-
-EXTRA_DIST = paisleycmd.spec README.md RELEASE $(BUILT_SOURCES)
+EXTRA_DIST = paisleycmd.spec README.md RELEASE REVISION
 
 
 SOURCES = $(top_srcdir)/paisleycmd/*.py $(top_srcdir)/paisleycmd/*/*.py
@@ -36,3 +34,6 @@ REVISION: $(top_srcdir)/.git paisleycmd/common/common.py
 	md5sum $< > $@
 
 include $(top_srcdir)/m4/pychecker.mk
+
+all-local:
+	if test -e $(top_srcdir)/.git; then make REVISION; fi
