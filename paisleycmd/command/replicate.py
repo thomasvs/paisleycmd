@@ -42,9 +42,9 @@ The default remote port is %d.
 
     @defer.inlineCallbacks
     def doLater(self, args):
-
-        c = self.getRootCommand()
-        sourceUri = '/' + self.getRootCommand().getDatabase()
+        root = self.getRootCommand()
+        sourceUri = '/' + root.getDatabase()
+        client = self.getRootCommand().getClient()
 
         # figure out target
         try:
@@ -62,7 +62,7 @@ The default remote port is %d.
         self.log('url %s parsed to %r', url, parsed)
         password = None
         if parsed.username and not parsed.password:
-            password = c.getPassword(
+            password = root.getPassword(
                 prompt='\nPassword for target database %s: ' % url)
 
         # default to same db name on different host
@@ -72,9 +72,9 @@ The default remote port is %d.
         self.log('remote url rewritten to %s', jane)
 
         # figure out source
-        client = self.getRootCommand().getClient()
-        tarzan = client.url_template % sourceUri
-        tarzan = sourceUri
+        # sourceUri = '/' + root.getDatabase()
+        # tarzan = client.url_template % sourceUri
+        tarzan = root.getDatabase()
 
         self.log('local url rewritten to %s', tarzan)
 
