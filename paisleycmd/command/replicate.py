@@ -72,8 +72,10 @@ The default remote port is %d.
         self.log('target url rewritten to %s', jane)
 
         # figure out source
-        client = self.getRootCommand().getAdminClient()
+        client = self.getRootCommand().getClient()
         tarzan = client.url_template % sourceUri
+
+        self.log('source url rewritten to %s', tarzan)
 
         dbs = []
         if self.options.direction in ['forward', 'both']:
