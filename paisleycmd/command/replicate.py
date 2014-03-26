@@ -69,6 +69,8 @@ The default remote port is %d.
         jane = urlrewrite.rewrite(url, hostname=HOST, port=PORT,
             password=password, path=sourceUri)
 
+        self.log('target url rewritten to %s', jane)
+
         # figure out source
         client = self.getRootCommand().getAdminClient()
         tarzan = client.url_template % sourceUri
