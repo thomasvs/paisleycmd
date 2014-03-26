@@ -69,13 +69,14 @@ The default remote port is %d.
         jane = urlrewrite.rewrite(url, hostname=HOST, port=PORT,
             password=password, path=sourceUri)
 
-        self.log('target url rewritten to %s', jane)
+        self.log('remote url rewritten to %s', jane)
 
         # figure out source
         client = self.getRootCommand().getClient()
         tarzan = client.url_template % sourceUri
+        tarzan = sourceUri
 
-        self.log('source url rewritten to %s', tarzan)
+        self.log('local url rewritten to %s', tarzan)
 
         dbs = []
         if self.options.direction in ['forward', 'both']:
