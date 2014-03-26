@@ -9,7 +9,6 @@ from twisted.web import error as twerror
 from paisley import pjson as json
 
 from paisleycmd.extern.log import log
-from paisleycmd.extern.command import tcommand
 
 from paisleycmd.common import logcommand, urlrewrite
 
@@ -17,7 +16,7 @@ HOST = 'localhost'
 PORT = 5984
 
 
-class Add(tcommand.TwistedCommand):
+class Add(logcommand.TwistedLogCommand):
     summary = "Add another database to replicate with"
     usage = "http[s]://[USER[:PASSWORD]@]HOST[:PORT][/DB]"
     description = """Set up replication with another database.
@@ -60,6 +59,7 @@ The default remote port is %d.
 
         # if a username was given, but no password, ask for it
         parsed = urlparse.urlparse(url)
+        self.log('url %s parsed to %r', url, parsed)
         password = None
         if parsed.username and not parsed.password:
             password = c.getPassword(
