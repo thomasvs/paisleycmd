@@ -28,7 +28,7 @@ PYCHECKER_BLACKLIST =
 release: dist
 	make $(PACKAGE)-$(VERSION).tar.bz2.md5
 
-REVISION: $(top_srcdir)/.git
+REVISION: $(top_srcdir)/.git paisleycmd/common/common.py
 	$(PYTHON) -c 'from paisleycmd.configure import configure; print configure.revision' > REVISION
 
 # generate md5 sum files
