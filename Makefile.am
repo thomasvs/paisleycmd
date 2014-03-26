@@ -5,7 +5,10 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = paisleycmd bin etc m4 misc doc
 
-EXTRA_DIST = paisleycmd.spec README.md RELEASE
+BUILT_SOURCES = REVISION
+
+EXTRA_DIST = paisleycmd.spec README.md RELEASE $(BUILT_SOURCES)
+
 
 SOURCES = $(top_srcdir)/paisleycmd/*.py $(top_srcdir)/paisleycmd/*/*.py
 
