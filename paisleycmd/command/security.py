@@ -6,12 +6,9 @@ The security command
 """
 
 from twisted.internet import defer
-from twisted.web import error, http
-
-from paisleycmd.extern.paisley import pjson as json
+from twisted.web import error
 
 from paisleycmd.common import logcommand
-from paisleycmd.common import log
 
 class SecurityCommand(logcommand.TwistedLogCommand):
 
@@ -24,7 +21,7 @@ class SecurityCommand(logcommand.TwistedLogCommand):
             result = yield self.client.openDoc(self.db, '_security')
         except error.Error, e:
             raise
-        except Exception, e:
+        except Exception:
             raise
 
         defer.returnValue(result)
