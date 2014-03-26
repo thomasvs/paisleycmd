@@ -35,10 +35,10 @@ The default remote port is %d.
     def addOptions(self):
         self.parser.add_option('-t', '--type',
             action="store", dest="type",
-            help="single/continuous", default="continuous")
+            help="single/continuous (default %default)", default="continuous")
         self.parser.add_option('-d', '--direction',
             action="store", dest="direction",
-            help="forward/backward/both", default="both")
+            help="forward/backward/both (default %default)", default="both")
 
     @defer.inlineCallbacks
     def doLater(self, args):
