@@ -4,11 +4,11 @@
 Name:           paisleycmd
 Version:        @PACKAGE_VERSION@
 Release:        @PACKAGE_VERSION_RELEASE@%{?dist}
-Summary:        Tool to manage a CouchDB database using paisley.
+Summary:        Tool to manage a CouchDB database using paisley
 Source:         http://thomas.apestaart.org/download/paisleycmd/%{name}-%{version}.tar.bz2
 URL:            https://github.com/thomasvs/paisleycmd/
 License:        GPLv3
-Group:          Applications/Database
+Group:          Applications/Databases
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
