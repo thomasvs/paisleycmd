@@ -28,8 +28,8 @@ Example: gtd replicate add http://thomas@otto
 will add a two-way replication to the mushin database on the host 'otto',
 authenticating as the user 'thomas', and asking for a password.
 
-The default remote host is %s.
-The default remote port is %d.
+The default other host is %s.
+The default other port is %d.
 """ % (HOST, PORT)
 
     def addOptions(self):
@@ -39,6 +39,9 @@ The default remote port is %d.
         self.parser.add_option('-d', '--direction',
             action="store", dest="direction",
             help="forward/backward/both (default %default)", default="both")
+        self.parser.add_option('-f', '--password-file',
+                          action="store", dest="password_file",
+                          help="password file (for the other host)", default="")
 
     @defer.inlineCallbacks
     def doLater(self, args):
@@ -60,8 +63,22 @@ The default remote port is %d.
         # if a username was given, but no password, ask for it
         parsed = urlparse.urlparse(url)
         self.log('url %s parsed to %r', url, parsed)
-        password = None
-        if parsed.username and not parsed.password:
+
+        # if password specified in URL, use it
+        password = parsed.password
+
+        # if password file given, use that
+        if self.options.password_file:
+            try:
+                with open(self.options.password_file, "r") as handle:
+                    password = handle.read().strip()
+            except:
+                self.stderr.write(
+                    "ERROR: Could not read password from file %s\n" % (
+                        self.options.password_file, ))
+
+        # if still no password, prompt for it if we have a username too
+        if parsed.username and not password:
             password = root.getPassword(
                 prompt='\nPassword for target database %s: ' % url)
 

@@ -47,5 +47,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/bash_completion.d/paisley
 
 %changelog
+* Tue May 06 2014 Thomas Vander Stichele <thomas at apestaart dot org>
+- 0.1.3
+- added a way to read the other database password from a file for replicate add
+
 * Mon Mar 03 2014 Thomas Vander Stichele <thomas at apestaart dot org>
 - initial package
