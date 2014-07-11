@@ -24,7 +24,6 @@ class Restart(logcommand.TwistedLogCommand):
         url = '/_config/query_servers/%s' % args[0]
         server = yield self._client.get(url)
         self.debug('server: %s', server)
-        print type(server)
 
         # FIXME: isn't it weird that get gives me unicode but put doesn't take
         # it ?
