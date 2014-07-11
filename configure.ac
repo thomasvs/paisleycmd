@@ -1,7 +1,7 @@
 dnl initialize autoconf
 dnl when going to/from release please remove/add the nano (fourth number)
 dnl releases only do Wall, trunk and prerelease does Werror too
-AC_INIT(paisleycmd, 0.1.3,
+AC_INIT(paisleycmd, 0.1.4,
    https://github.com/thomasvs/paisleycmd,
    paisleycmd)
 
