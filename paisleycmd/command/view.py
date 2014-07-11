@@ -148,7 +148,8 @@ understands.
 
 class Get(tcommand.TwistedCommand):
 
-    description = """Get views"""
+    usage = "%command -d/--design designname -v/--view viewname"
+    description = """Get a view. This triggers indexing if needed."""
 
     def addOptions(self):
         self.parser.add_option('-d', '--design',
@@ -165,7 +166,7 @@ class Get(tcommand.TwistedCommand):
     def doLater(self, args):
         if not self._options.design:
             raise command.CommandError(
-                "Please specify the name of a design document with -d"
+                "Please specify the name of a design document with -d "
                 "(without the leading _design/).")
 
         if not self._options.view:
