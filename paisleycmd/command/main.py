@@ -17,7 +17,7 @@ from paisleycmd.extern.paisley import client
 from paisleycmd.common import log
 from paisleycmd.common import logcommand
 from paisleycmd.command import database, document, replicate, security, task
-from paisleycmd.command import user
+from paisleycmd.command import user, viewserver
 from paisleycmd.configure import configure
 
 _DEFAULT_HOST = 'localhost'
@@ -84,7 +84,9 @@ You can get help on subcommands by using the -h option to the subcommand.
         replicate.Replicate,
         security.Security,
         task.Task,
-        user.User, ]
+        user.User,
+        viewserver.ViewServer,
+    ]
 
     db = None
 

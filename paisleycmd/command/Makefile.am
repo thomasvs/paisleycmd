@@ -11,4 +11,5 @@ paisleycmd_PYTHON = \
 	security.py \
 	task.py     \
 	user.py     \
-	view.py
+	view.py     \
+	viewserver.py
