@@ -40,4 +40,3 @@ class LogCommand(command.Command, log.Loggable):
 
 class TwistedLogCommand(tcommand.TwistedCommand, LogCommand):
     pass
-
