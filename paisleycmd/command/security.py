@@ -33,11 +33,11 @@ class Add(SecurityCommand):
     def addOptions(self):
         self.parser.add_option('-p', '--permission',
                           action="store", dest="permission",
-                          help="admin or reader (defaults to %default)", 
+                          help="admin or reader (defaults to %default)",
                           default="reader")
         self.parser.add_option('-t', '--type',
                           action="store", dest="type",
-                          help="name or role (defaults to %default)", 
+                          help="name or role (defaults to %default)",
                           default="name")
 
     @defer.inlineCallbacks
