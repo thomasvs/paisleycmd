@@ -13,6 +13,7 @@ from paisleycmd.extern.command import command, tcommand
 from paisleycmd.extern.paisley.client import json
 
 from paisleycmd.common import logcommand, common
+from paisleycmd.command import viewserver
 
 
 # return: dict of design_doc -> list of view names
@@ -227,6 +228,6 @@ class Size(tcommand.TwistedCommand):
 
 class View(logcommand.LogCommand):
 
-    subCommandClasses = [Compact, Dump, Get, List, Size]
+    subCommandClasses = [Compact, Dump, Get, List, Size, viewserver.ViewServer]
 
     description = 'Interact with views.'
