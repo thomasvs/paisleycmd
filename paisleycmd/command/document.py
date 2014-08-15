@@ -96,9 +96,26 @@ if it does.
             if self.options.dryrun:
                 self.stdout.write("%s\n" % result.encode('utf-8'))
             else:
-                ret = yield db.saveDoc(
-                    self.getRootCommand().getDatabase(),
-                    result, row['key'])
+                doc = client.json.loads(result)
+
+                if row['key'] == doc['_id']:
+                    # no _id change
+                    yield db.saveDoc(
+                        self.getRootCommand().getDatabase(),
+                        result, doc['_id'])
+                else:
+                    # _id change, so save the doc under new id and delete old
+                    del doc['_rev']
+                    try:
+                        yield db.saveDoc(
+                            self.getRootCommand().getDatabase(),
+                            client.json.dumps(doc), doc['_id'])
+                    except:
+                        pass
+                    yield db.deleteDoc(
+                        self.getRootCommand().getDatabase(),
+                        row['key'], row['doc']['_rev'])
+
 
 class Delete(_ScriptCommand):
 
