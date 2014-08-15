@@ -58,6 +58,8 @@ class _ScriptCommand(tcommand.TwistedCommand):
 
     def handledRow(self, row, result):
         """
+        @type  result: str
+
         @rtype: L{defer.Deferred}
         """
         raise NotImplementedError
