@@ -41,10 +41,10 @@ class _ScriptCommand(tcommand.TwistedCommand):
 
 
         db = self.getRootCommand().getClient()
-        result = yield db.listDoc(
+        allDocs = yield db.listDoc(
             self.getRootCommand().getDatabase(), include_docs=True)
 
-        for row in result['rows']:
+        for row in allDocs['rows']:
             self.rows += 1
             doc = row['doc']
             self.debug('passing doc %r', doc)
