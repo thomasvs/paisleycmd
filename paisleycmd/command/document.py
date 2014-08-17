@@ -6,7 +6,6 @@ The document command
 """
 
 import subprocess
-import base64
 
 from twisted.internet import defer
 
