@@ -48,6 +48,9 @@ def update(doc):
     else:
         doc['state'] = 1
 
+    doc['createdAt'] = doc.get('start', None)
+    doc['updatedAt'] = doc.get('updated', None)
+
     md5 = doc['_id']
     d = base_decode(md5, BASE_16_DICT)
     # fit into 8 hoodie characters
