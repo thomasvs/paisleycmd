@@ -51,11 +51,16 @@ def update(doc):
     doc['createdAt'] = doc.get('start', None)
     doc['updatedAt'] = doc.get('updated', None)
 
+    # clean up any double contexts/projects
+    doc['contexts'] = list(set(doc['contexts']))
+    doc['projects'] = list(set(doc['projects']))
+
     md5 = doc['_id']
     d = base_decode(md5, BASE_16_DICT)
-    # fit into 8 hoodie characters
-    d %= 26 ** 10
-    h = base_encode(d, BASE_26_LIST)
+    # fit into 9 hoodie characters
+    d %= 26 ** 9
+    # make sure we have 9 chars by appending zeroes
+    h = base_encode(d, BASE_26_LIST) + '000000000'
     doc['_id'] = 'thing/' + h[0:9]
 
     return doc
