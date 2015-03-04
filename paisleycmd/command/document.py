@@ -11,7 +11,7 @@ from twisted.internet import defer
 
 from paisleycmd.extern.paisley import client
 
-from paisleycmd.extern.command import tcommand
+from paisleycmd.extern.command import command, tcommand
 
 from paisleycmd.common import logcommand
 
@@ -47,8 +47,14 @@ class _ScriptCommand(tcommand.TwistedCommand):
             self.rows += 1
             doc = row['doc']
             self.debug('passing doc %r', doc)
-            self.process.stdin.write(client.json.dumps(doc) + '\n')
-            #print self.process.stderr.read()
+            try:
+                self.process.stdin.write(client.json.dumps(doc) + '\n')
+            except IOError:
+                # error 32, Broken Pipe, can happen if the script fails
+                # FIXME: not sure if that is the only error possible and
+                # if there will always be stderr output
+                raise command.CommandError('Error running script: '
+                    + self.process.stderr.read())
             result = self.process.stdout.readline().rstrip()
             yield self.handledRow(row, result)
 
