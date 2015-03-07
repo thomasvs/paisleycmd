@@ -4,12 +4,16 @@
 
 # This is an example of a filter to use for paisley database document apply
 #
-# This script ensures that all urgency and importance fields are integers, not
-# strings.  mushin-hoodie was inaccurately saving these as strings on
-# modifications.
+# This script fixes documents based on bugs noticed:
+#
+# - ensures that all urgency and importance fields are integers, not
+#   strings.  mushin-hoodie was inaccurately saving these as strings on
+#   modifications.
+#
+# - fix broken due dates like 2009-11-15T00:00:00Z161049600000
 #
 # Sample run:
-# paisley -D daddup document apply --dry-run examples/mushin-hoodie-intify-iu.py
+# paisley -D daddup document apply --dry-run examples/mushin-hoodie-fix-doc.py
 
 import sys
 
@@ -24,6 +28,18 @@ def intifyKey(doc, key):
         doc[key] = int(doc[key])
         return True
 
+
+def fixDate(doc, key):
+    # handles both non-existent keys and None values
+    if not doc.get(key, None):
+        return
+
+    pos = doc[key].find('Z', 0, -1)
+    if pos > -1:
+        doc[key] = doc[key][:pos + 1]
+        return True
+
+
 def update(doc):
 
     updated = False
@@ -36,11 +52,20 @@ def update(doc):
         return
 
 
+    # fix importance/urgency
     if intifyKey(doc, 'importance'):
         updated = True
 
     if intifyKey(doc, 'urgency'):
         updated = True
+
+    # fix due date
+    if fixDate(doc, 'due'):
+        updated = True
+
+    if fixDate(doc, 'start'):
+        updated = True
+
 
     if not updated:
         return
